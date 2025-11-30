@@ -1,5 +1,0 @@
-Input x: 1
-tan(x): 1.55741
-cot(x): 0.642093
-Result y(x) = sqrt(cot(x) * tan(x)): 1
-------------------------
