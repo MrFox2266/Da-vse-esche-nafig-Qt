@@ -1,0 +1,7 @@
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/Kursovaya_2.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/install.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/install/local.dir
+C:/Users/foxmr/Documents/Kursovaya_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/install/strip.dir
