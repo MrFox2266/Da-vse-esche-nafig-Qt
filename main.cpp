@@ -1,164 +1,110 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <string>
-#include <vector>
-#include <limits>
+#include <iomanip>
 
-// Базовый класс для математических операций
+using namespace std;
+
+// Базовый класс для математических функций
 class MathFunction {
 protected:
-    double x;
-    double result;
-
+    double x; // переменная x
+    
 public:
     // Конструктор
-    MathFunction(double input_x) : x(input_x), result(0.0) {}
+    MathFunction(double val = 0) : x(val) {}
     
-    // Виртуальная функция для вычисления - позволяет переопределять в дочерних классах
+    // Виртуальная функция для вычисления значения
     virtual double calculate() = 0;
     
-    // Геттеры для доступа к данным
-    double getX() const { return x; }
-    double getResult() const { return result; }
+    // Установка значения x
+    void setX(double val) {
+        x = val;
+    }
     
-    // Виртуальный деструктор для правильного удаления объектов
+    // Виртуальный деструктор
     virtual ~MathFunction() {}
 };
 
-// Дочерний класс для вычисления тригонометрических функций
+// Класс для тригонометрической функции y(x) = sqrt(cot(x)*tan(x))
 class TrigFunction : public MathFunction {
 public:
-    TrigFunction(double input_x) : MathFunction(input_x) {}
+    // Конструктор
+    TrigFunction(double val = 0) : MathFunction(val) {}
     
-    // Реализация виртуальной функции из базового класса
+    // Реализация вычисления функции
     double calculate() override {
-        // Проверяем, что tan(x) и cot(x) не равны нулю и не создают отрицательное значение под корнем
-        double tan_x = tan(x);
-        double cot_x = 1.0 / tan(x);  // cot(x) = 1/tan(x)
-        
-        // Проверка на корректность вычислений
-        if (tan_x == 0 || std::isnan(tan_x) || std::isnan(cot_x)) {
-            std::cout << "Error: Invalid input for trigonometric functions!" << std::endl;
-            return std::numeric_limits<double>::quiet_NaN();
+        // Проверяем, не равны ли sin(x) или cos(x) нулю (с небольшим запасом)
+        if (abs(sin(x)) < 0.001 || abs(cos(x)) < 0.001) {
+            return -1; // специальное значение для неопределенности
         }
         
-        double product = cot_x * tan_x;
-        
-        // Проверяем, что произведение положительно для извлечения корня
-        if (product < 0) {
-            std::cout << "Error: Cannot calculate square root of negative number!" << std::endl;
-            return std::numeric_limits<double>::quiet_NaN();
-        }
-        
-        result = sqrt(product);
-        return result;
-    }
-    
-    // Метод для получения значения cot(x) отдельно
-    double getCot() const {
-        if (tan(x) == 0) return std::numeric_limits<double>::quiet_NaN();
-        return 1.0 / tan(x);
-    }
-    
-    // Метод для получения значения tan(x) отдельно
-    double getTan() const {
-        return tan(x);
-    }
-};
-
-// Класс для работы с файлами - второй иерархический класс
-class FileHandler {
-private:
-    std::string filename;
-
-public:
-    FileHandler(const std::string& fname) : filename(fname) {}
-    
-    // Метод для записи результата в файл
-    void writeToFile(double x, double result, double tan_x, double cot_x) {
-        std::ofstream file(filename, std::ios::app); // Открываем файл для добавления
-        if (file.is_open()) {
-            file << "Input x: " << x << std::endl;
-            file << "tan(x): " << tan_x << std::endl;
-            file << "cot(x): " << cot_x << std::endl;
-            file << "Result y(x) = sqrt(cot(x) * tan(x)): " << result << std::endl;
-            file << "------------------------" << std::endl;
-            file.close();
-            std::cout << "Result saved to file: " << filename << std::endl;
-        } else {
-            std::cout << "Error: Could not open file " << filename << " for writing!" << std::endl;
-        }
-    }
-    
-    // Метод для очистки файла
-    void clearFile() {
-        std::ofstream file(filename, std::ios::trunc); // Очищаем содержимое файла
-        file.close();
-    }
-};
-
-// Вспомогательный класс для вывода информации в консоль
-class ConsoleOutput {
-public:
-    static void printHeader() {
-        std::cout << "=========================================" << std::endl;
-        std::cout << "Mathematical Function Calculator" << std::endl;
-        std::cout << "Formula: y(x) = sqrt(cot(x) * tan(x))" << std::endl;
-        std::cout << "=========================================" << std::endl;
-    }
-    
-    static void printResult(double x, double result, double tan_x, double cot_x) {
-        std::cout << "\nCalculation Results:" << std::endl;
-        std::cout << "Input x: " << x << std::endl;
-        std::cout << "tan(x): " << tan_x << std::endl;
-        std::cout << "cot(x): " << cot_x << std::endl;
-        std::cout << "y(x) = sqrt(cot(x) * tan(x)): " << result << std::endl;
-        std::cout << std::endl;
-    }
-    
-    static void printError() {
-        std::cout << "Error occurred during calculation!" << std::endl;
+        double cot = cos(x) / sin(x); // котангенс
+        double tan = sin(x) / cos(x); // тангенс
+        return sqrt(cot * tan); // вычисляем sqrt(cot*tan)
     }
 };
 
 int main() {
-    // Очищаем консоль и выводим заголовок
-    ConsoleOutput::printHeader();
+    double a, b, h; // начало, конец интервала и шаг
     
-    // Создаем объект для работы с файлом
-    FileHandler fileHandler("results.txt");
-    fileHandler.clearFile(); // Очищаем файл перед новыми записями
+    // Ввод параметров с консоли
+    cout << "Enter interval start a: ";
+    cin >> a;
+    cout << "Enter interval end b: ";
+    cin >> b;
+    cout << "Enter step h: ";
+    cin >> h;
     
-    // Основной цикл программы
-    char continueChoice;
-    do {
-        double x;
-        std::cout << "Enter value of x (in radians): ";
-        std::cin >> x;
+    // Проверка корректности введенных данных
+    if (h <= 0) {
+        cout << "Error: step must be positive!" << endl;
+        return 1;
+    }
+    
+    if (a > b) {
+        cout << "Error: start must be less than end!" << endl;
+        return 1;
+    }
+    
+    // Открываем файл для записи результата
+    ofstream file("result.txt");
+    
+    if (!file.is_open()) {
+        cout << "Error: failed to create file!" << endl;
+        return 1;
+    }
+    
+    // Устанавливаем формат вывода с 4 знаками после запятой
+    cout << fixed << setprecision(4);
+    file << fixed << setprecision(4);
+    
+    // Заголовок таблицы в консоли
+    cout << "x\t\ty(x)\n";
+    file << "x\t\ty(x)\n"; // заголовок в файл
+    cout << "------------------------\n";
+    file << "------------------------\n"; // разделитель в файле
+    
+    // Создаем объект функции
+    TrigFunction func;
+    
+    // Проходим по интервалу с заданным шагом
+    for (double x = a; x <= b; x += h) {
+        func.setX(x); // устанавливаем текущее значение x
+        double result = func.calculate(); // вычисляем значение функции
         
-        // Создаем объект дочернего класса TrigFunction
-        TrigFunction func(x);
-        
-        // Вычисляем результат
-        double result = func.calculate();
-        
-        // Выводим результат в консоль
-        if (!std::isnan(result)) {
-            ConsoleOutput::printResult(func.getX(), result, func.getTan(), func.getCot());
-            
-            // Записываем результат в файл
-            fileHandler.writeToFile(func.getX(), result, func.getTan(), func.getCot());
+        if (result == -1) { // если функция не определена
+            cout << x << "\tundefined\n";
+            file << x << "\tundefined\n";
         } else {
-            ConsoleOutput::printError();
+            cout << x << "\t" << result << "\n"; // выводим в консоль
+            file << x << "\t" << result << "\n"; // записываем в файл
         }
-        
-        std::cout << "Do you want to calculate another value? (y/n): ";
-        std::cin >> continueChoice;
-        
-    } while (continueChoice == 'y' || continueChoice == 'Y');
+    }
     
-    std::cout << "Program finished. Results saved to results.txt" << std::endl;
+    file.close(); // закрываем файл
+    
+    cout << "Results saved to file result.txt" << endl;
     
     return 0;
 }
