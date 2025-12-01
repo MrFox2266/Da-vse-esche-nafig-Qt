@@ -65,4 +65,5 @@ Thumbs.db
 *.Z
 *.lz
 *.lzo
-```.qtcreator/
+# Qt Creator
+.qtcreator/
