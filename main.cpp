@@ -2,109 +2,128 @@
 #include <fstream>
 #include <cmath>
 #include <iomanip>
+#include <string>
 
 using namespace std;
 
-// Базовый класс для математических функций
+// Абстрактный класс (реализует абстракцию)
 class MathFunction {
-protected:
-    double x; // переменная x
-    
 public:
-    // Конструктор
-    MathFunction(double val = 0) : x(val) {}
-    
-    // Виртуальная функция для вычисления значения
-    virtual double calculate() = 0;
-    
-    // Установка значения x
-    void setX(double val) {
-        x = val;
-    }
-    
-    // Виртуальный деструктор
+    // Чисто виртуальная функция - делает класс абстрактным
+    virtual double calculate(double x) = 0;
     virtual ~MathFunction() {}
 };
 
-// Класс для тригонометрической функции y(x) = sqrt(cot(x)*tan(x))
+// Производный класс (реализует наследование и полиморфизм)
 class TrigFunction : public MathFunction {
 public:
-    // Конструктор
-    TrigFunction(double val = 0) : MathFunction(val) {}
-    
-    // Реализация вычисления функции
-    double calculate() override {
-        // Проверяем, не равны ли sin(x) или cos(x) нулю (с небольшим запасом)
+    // Переопределяет виртуальную функцию базового класса
+    double calculate(double x) override {
+        // Проверяем, не равны ли sin(x) или cos(x) нулю (с небольшой погрешностью)
         if (abs(sin(x)) < 0.001 || abs(cos(x)) < 0.001) {
-            return -1; // специальное значение для неопределенности
+            return NAN; // Возвращаем специальное значение для неопределённости
         }
-        
-        double cot = cos(x) / sin(x); // котангенс
-        double tan = sin(x) / cos(x); // тангенс
-        return sqrt(cot * tan); // вычисляем sqrt(cot*tan)
+
+        // Вычисляем котангенс и тангенс
+        double ctg = cos(x) / sin(x);
+        double tg = sin(x) / cos(x);
+
+        // Вычисляем y(x) = sqrt(cot(x)*tan(x))
+        double result = sqrt(ctg * tg);
+
+        return result;
+    }
+};
+
+// Класс для обработки вывода
+class OutputHandler {
+private:
+    ofstream file;
+
+public:
+    // Конструктор открывает файл
+    OutputHandler(const string& filename) {
+        file.open(filename);
+    }
+
+    // Деструктор закрывает файл
+    ~OutputHandler() {
+        if (file.is_open()) {
+            file.close();
+        }
+    }
+
+    // Метод для вывода таблицы значений
+    void printTable(double a, double b, double h, MathFunction& func) {
+        cout << fixed << setprecision(4);
+        cout << "x\t\ty(x)\n";
+        cout << "------------------------\n";
+
+        // Выводим заголовок в файл, если он открыт
+        if (file.is_open()) {
+            file << fixed << setprecision(4);
+            file << "x\t\ty(x)\n";
+            file << "------------------------\n";
+        }
+
+        // Вычисляем и выводим значения функции на интервале
+        for (double x = a; x <= b; x += h) {
+            double result = func.calculate(x);
+
+            if (isnan(result)) {
+                cout << x << "\tundefined\n";
+                if (file.is_open()) {
+                    file << x << "\tundefined\n";
+                }
+            } else {
+                cout << x << "\t" << result << "\n";
+                if (file.is_open()) {
+                    file << x << "\t" << result << "\n";
+                }
+            }
+        }
     }
 };
 
 int main() {
-    double a, b, h; // начало, конец интервала и шаг
-    
-    // Ввод параметров с консоли
+    // Устанавливаем кодировку для корректного отображения русских символов
+    system("chcp 65001 > nul");
+
+    double a, b, h;
+
+    // Вводим параметры интервала
     cout << "Enter interval start a: ";
     cin >> a;
     cout << "Enter interval end b: ";
     cin >> b;
     cout << "Enter step h: ";
     cin >> h;
-    
-    // Проверка корректности введенных данных
+
+    // Проверяем корректность введённых данных
     if (h <= 0) {
         cout << "Error: step must be positive!" << endl;
         return 1;
     }
-    
+
     if (a > b) {
         cout << "Error: start must be less than end!" << endl;
         return 1;
     }
-    
-    // Открываем файл для записи результата
-    ofstream file("result.txt");
-    
-    if (!file.is_open()) {
-        cout << "Error: failed to create file!" << endl;
-        return 1;
-    }
-    
-    // Устанавливаем формат вывода с 4 знаками после запятой
-    cout << fixed << setprecision(4);
-    file << fixed << setprecision(4);
-    
-    // Заголовок таблицы в консоли
-    cout << "x\t\ty(x)\n";
-    file << "x\t\ty(x)\n"; // заголовок в файл
-    cout << "------------------------\n";
-    file << "------------------------\n"; // разделитель в файле
-    
-    // Создаем объект функции
-    TrigFunction func;
-    
-    // Проходим по интервалу с заданным шагом
-    for (double x = a; x <= b; x += h) {
-        func.setX(x); // устанавливаем текущее значение x
-        double result = func.calculate(); // вычисляем значение функции
-        
-        if (result == -1) { // если функция не определена
-            cout << x << "\tundefined\n";
-            file << x << "\tundefined\n";
-        } else {
-            cout << x << "\t" << result << "\n"; // выводим в консоль
-            file << x << "\t" << result << "\n"; // записываем в файл
-        }
-    }
-    
-    file.close(); // закрываем файл
-    
-    cout << "Results saved to file result.txt" << endl;
-    
+
+    // Создаём объекты классов
+    TrigFunction trigFunc; // Объект для вычисления функции
+    OutputHandler output("result.txt"); // Объект для вывода в файл
+
+    // Выводим таблицу значений
+    output.printTable(a, b, h, trigFunc);
+
+    // Сообщаем пользователю о сохранении результатов
+    cout << "\nResults saved to file result.txt" << endl;
+
+    // Ждём нажатия клавиши перед завершением программы
+    cout << "Press Enter to close...";
+    cin.ignore();
+    cin.get();
+
     return 0;
 }
